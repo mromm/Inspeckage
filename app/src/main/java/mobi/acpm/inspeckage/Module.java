@@ -32,6 +32,7 @@ import mobi.acpm.inspeckage.hooks.UIHook;
 import mobi.acpm.inspeckage.hooks.UserHooks;
 import mobi.acpm.inspeckage.hooks.WebViewHook;
 import mobi.acpm.inspeckage.hooks.entities.LocationHook;
+import mobi.acpm.inspeckage.unpack.UnPack;
 import mobi.acpm.inspeckage.util.Config;
 import mobi.acpm.inspeckage.util.FileType;
 import mobi.acpm.inspeckage.util.FileUtil;
@@ -133,6 +134,13 @@ public class Module extends XC_MethodHook implements IXposedHookLoadPackage, IXp
                 });
 
         UIHook.initAllHooks(loadPackageParam);
+
+        //FDEX2 hooking
+
+        String processName = sPrefs.getString("package", "");
+
+        UnPack.Hooking(loadPackageParam, processName);
+
 
         if(sPrefs.getBoolean(Config.SP_TAB_ENABLE_HTTP,true)) {
             HttpHook.initAllHooks(loadPackageParam);
