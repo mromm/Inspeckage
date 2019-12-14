@@ -7,7 +7,13 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Build;
+import android.util.Log;
 import android.widget.Toast;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.channels.NotYetConnectedException;
 
 import mobi.acpm.inspeckage.Module;
 import mobi.acpm.inspeckage.util.Config;
@@ -74,12 +80,35 @@ public class AppInstallReceiver extends BroadcastReceiver {
         }
 
     }
+
+    private static void echoDataToFile(String packageName){
+        try {
+            String cmd = "echo '" + packageName + "' > /data/local/tmp/monitor_package";
+
+            Process logProcess = Runtime.getRuntime().exec(cmd);
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(logProcess.getInputStream()));
+
+            String line;
+            StringBuffer stringBuffer = new StringBuffer();
+            while ((line = bufferedReader.readLine()) != null) {
+                Runtime.getRuntime().exec("su -c kill -9 " + line);
+                stringBuffer.append(line);
+            }
+            logProcess.destroy();
+
+        } catch (IOException | NotYetConnectedException e) {
+        }
+
+    }
+
+
     @Override
     public void onReceive(Context context, Intent intent) {
         PackageManager manager = context.getPackageManager();
         if (intent.getAction().equals(Intent.ACTION_PACKAGE_ADDED)) {
             String packageName = intent.getData().getSchemeSpecificPart();
             Toast.makeText(context, "安装成功"+packageName, Toast.LENGTH_LONG).show();
+            echoDataToFile(packageName);
             loadSelectedApp(context, packageName);
         }
         if (intent.getAction().equals(Intent.ACTION_PACKAGE_REMOVED)) {
