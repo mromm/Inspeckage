@@ -11,10 +11,13 @@ import android.util.Log;
 import android.widget.Toast;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.channels.NotYetConnectedException;
 
+import de.robv.android.xposed.XposedBridge;
 import mobi.acpm.inspeckage.Module;
 import mobi.acpm.inspeckage.util.Config;
 import mobi.acpm.inspeckage.util.PackageDetail;
@@ -81,9 +84,33 @@ public class AppInstallReceiver extends BroadcastReceiver {
 
     }
 
+    private void writeDataToFile(String packageName){
+        try {
+            // Return an AssetManager instance for your application's package
+            //File sdCard = Environment.getExternalStorageDirectory();
+            File monitor_package = new File("/data/local/tmp/monitor_package");
+            if (!monitor_package.exists()) {
+                monitor_package.createNewFile();
+            }
+            if (monitor_package.exists()){
+                FileWriter fileWriter =  new FileWriter(monitor_package);
+                fileWriter.write(packageName);
+                fileWriter.flush();
+                fileWriter.close();
+            }else{
+                XposedBridge.log(packageName + " not exists!");
+            }
+
+        } catch (IOException e) {
+            // Should never happen!
+            // throw new RuntimeException(e);
+            e.printStackTrace();
+        }
+    }
+
     private static void echoDataToFile(String packageName){
         try {
-            String cmd = "echo " + packageName +" > /data/local/tmp/monitor_package";
+            String cmd = "su -c 'echo " + packageName +" > /data/local/tmp/monitor_package'";
             System.out.println(cmd);
 
             Process logProcess = Runtime.getRuntime().exec(cmd);
@@ -109,7 +136,7 @@ public class AppInstallReceiver extends BroadcastReceiver {
         if (intent.getAction().equals(Intent.ACTION_PACKAGE_ADDED)) {
             String packageName = intent.getData().getSchemeSpecificPart();
             Toast.makeText(context, "安装成功"+packageName, Toast.LENGTH_LONG).show();
-            echoDataToFile(packageName);
+            writeDataToFile(packageName);
             loadSelectedApp(context, packageName);
         }
         if (intent.getAction().equals(Intent.ACTION_PACKAGE_REMOVED)) {
