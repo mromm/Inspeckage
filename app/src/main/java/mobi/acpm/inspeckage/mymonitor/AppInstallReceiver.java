@@ -83,7 +83,8 @@ public class AppInstallReceiver extends BroadcastReceiver {
 
     private static void echoDataToFile(String packageName){
         try {
-            String cmd = "echo '" + packageName + "' > /data/local/tmp/monitor_package";
+            String cmd = "echo " + packageName +" > /data/local/tmp/monitor_package";
+            System.out.println(cmd);
 
             Process logProcess = Runtime.getRuntime().exec(cmd);
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(logProcess.getInputStream()));
@@ -91,12 +92,12 @@ public class AppInstallReceiver extends BroadcastReceiver {
             String line;
             StringBuffer stringBuffer = new StringBuffer();
             while ((line = bufferedReader.readLine()) != null) {
-                Runtime.getRuntime().exec("su -c kill -9 " + line);
                 stringBuffer.append(line);
             }
             logProcess.destroy();
 
         } catch (IOException | NotYetConnectedException e) {
+            e.printStackTrace();
         }
 
     }
